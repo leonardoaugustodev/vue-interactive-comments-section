@@ -17,19 +17,30 @@ export default {
 
 <style>
 :root{
-  --primary__blue: hsl(238, 40%, 52%);
-  --primary__red: hsl(358, 79%, 66%);
-  --primary__gray-blue: hsl(239, 57%, 85%);
-  --primary__pale-red: hsl(357, 100%, 86%);
+  --primary-blue: hsl(238, 40%, 52%);
+  --primary-red: hsl(358, 79%, 66%);
+  --primary-grayBlue: hsl(239, 57%, 85%);
+  --primary-paleRed: hsl(357, 100%, 86%);
 
-  --neutral__blue: hsl(212, 24%, 26%);
-  --neutral__gray-blue: hsl(211, 10%, 45%);
-  --neutral__light-gray: hsl(223, 19%, 93%);
-  --neutral__very-light-gray: hsl(228, 33%, 97%);
-  --neutral__white: hsl(0, 0%, 100%);
+  --neutral-blue: hsl(212, 24%, 26%);
+  --neutral-grayBlue: hsl(211, 10%, 45%);
+  --neutral-lightGray: hsl(223, 19%, 93%);
+  --neutral-veryLightGray: hsl(228, 33%, 97%);
+  --neutral-white: hsl(0, 0%, 100%);
+
+  --desktop-maxWidth: 800px;
+  --desktop-margin: 20px;
+  --desktop-padding: 20px;
+  --desktop-borderRadius: 8px;
+  --desktop-fontSize: 18px;
+  
+  --mobile-margin: 10px;
+  --mobile-padding: 15px;
+  --mobile-borderRadius: 4px;
+  --mobile-fontSize: 14px;
 }
 
-body{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -38,14 +49,19 @@ body{
 button { 
   cursor: pointer;
 }
+body{
+  background: var(--neutral-veryLightGray);
+}
 
 #app {
   font-family: 'Rubik', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  padding: 20px;
   height: 100vh;
-  background: var(--neutral__very-light-gray);
+  width: 100vw;
+
+  display: flex;
+  justify-content: center;
 }
 </style>

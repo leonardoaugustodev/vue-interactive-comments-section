@@ -104,7 +104,7 @@ export default {
   flex-direction: column;
   align-items: flex-end;
 
-  width: 800px;
+  width: var(--desktop-maxWidth);
 }
 .reply{
   display: flex;
@@ -112,6 +112,21 @@ export default {
 }
 
 .vertical-line{
-  border-left: 4px solid var(--neutral__light-gray);
+  border-left: 4px solid var(--neutral-lightGray);
+}
+
+@media (max-width: 375px) {
+  .cards {
+    width: inherit;
+  }
+
+  .reply{
+    margin-left: 15px;
+  }
+
+  .vertical-line{
+    border-left: 2px solid var(--neutral-lightGray);
+
+  }
 }
 </style>
