@@ -17,8 +17,11 @@ export default {
 
 <style>
 :root{
-  --primary-blue: hsl(238, 40%, 52%);
-  --primary-red: hsl(358, 79%, 66%);
+
+  --rgb-blue: 84, 87, 182;
+
+  --primary-blue: rgb(var(--rgb-blue));
+  --primary-red: rgb(237, 100, 104);
   --primary-grayBlue: hsl(239, 57%, 85%);
   --primary-paleRed: hsl(357, 100%, 86%);
 
@@ -31,8 +34,8 @@ export default {
   --desktop-maxWidth: 800px;
   --desktop-margin: 20px;
   --desktop-padding: 20px;
-  --desktop-borderRadius: 8px;
-  --desktop-fontSize: 18px;
+  --desktop-borderRadius: 6px;
+  --desktop-fontSize: 16px;
   
   --mobile-margin: 10px;
   --mobile-padding: 15px;
@@ -49,6 +52,12 @@ export default {
 button { 
   cursor: pointer;
 }
+
+button:hover{
+  filter: opacity(0.7);
+  transition: all 0.3s ;
+}
+
 body{
   background: var(--neutral-veryLightGray);
 }

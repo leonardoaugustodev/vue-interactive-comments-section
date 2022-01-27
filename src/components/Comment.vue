@@ -1,31 +1,49 @@
 <template>
-  <div>
-    <div class="card">
-      <div class="counter">
-        <button>
-          <img src="@/assets/icons/icon-plus.svg" />
-        </button>
-        <span>{{ comment.score }}</span>
-        <button>
-          <img src="@/assets/icons/icon-minus.svg" />
-        </button>
+  <div class="card">
+    <div class="counter">
+      <button @click="changeScore(1)">
+        <img src="@/assets/icons/icon-plus.svg" />
+      </button>
+      <span>{{ comment.score }}</span>
+      <button @click="changeScore(-1)">
+        <img src="@/assets/icons/icon-minus.svg" />
+      </button>
+    </div>
+    <div class="title">
+      <div class="title-content">
+        <img class="avatar" :src="getImage(comment.user.image.png)" />
+        <div class="username">{{ comment.user.username }}</div>
+        <div v-if="isOwner" class="tag">you</div>
+        <div class="date">{{ comment.createdAt }}</div>
       </div>
-      <div class="title">
-        <div class="title-content">
-          <img class="avatar" :src="getImage(comment.user.image.png)" />
-          <div class="username">{{ comment.user.username }}</div>
-          <div class="date">{{ comment.createdAt }}</div>
-        </div>
+    </div>
+    <div class="content">
+      <div v-if="isEdit" class="content-edit">
+        <textarea rows="4" v-model="newComment" />
+        <button name="update" @click="update">Update</button>
       </div>
-      <div class="content">
+      <div v-else>
+        <span class="mention">{{
+          comment.replyingTo ? `@${comment.replyingTo}` : ""
+        }}</span>
         {{ comment.content }}
       </div>
-      <div class="action">
-        <button>
-          <img src="@/assets/icons/icon-reply.svg" />
-          <span>Reply</span>
+    </div>
+    <div class="action">
+      <div v-if="isOwner" class="action-buttons">
+        <button name="delete" @click="handleDelete" :disabled="isEdit">
+          <img src="@/assets/icons/icon-delete.svg" />
+          <span>Delete</span>
+        </button>
+        <button name="edit" @click="edit" :disabled="isEdit">
+          <img src="@/assets/icons/icon-edit.svg" />
+          <span>Edit</span>
         </button>
       </div>
+      <button v-else>
+        <img src="@/assets/icons/icon-reply.svg" />
+        <span>Reply</span>
+      </button>
     </div>
   </div>
 </template>
@@ -35,10 +53,42 @@ export default {
   name: "Comment",
   props: {
     comment: Object,
+    isOwner: Boolean,
+  },
+  data() {
+    return {
+      isEdit: false,
+      newComment: undefined,
+    };
   },
   methods: {
     getImage(imgUrl) {
       return require("../assets/avatars" + imgUrl);
+    },
+    edit() {
+      this.isEdit = true;
+      this.newComment =
+        (this.comment.replyingTo ? `@${this.comment.replyingTo} ` : "") +
+        this.comment.content;
+    },
+    update() {
+      this.$emit("update", {
+        id: this.comment.id,
+        comment: this.newComment,
+      });
+
+      this.isEdit = false;
+    },
+    handleDelete() {
+      this.$emit("delete", {
+        id: this.comment.id,
+      });
+    },
+    changeScore(value) {
+      this.$emit("change-score", {
+        id: this.comment.id,
+        newScore: this.comment.score + value,
+      });
     },
   },
 };
@@ -51,8 +101,9 @@ export default {
   grid-template-areas:
     "counter title action"
     "counter content content";
+  grid-template-columns: min-content 1fr 1fr;
 
-  width: inherit;
+  width: 100%;
   background: var(--neutral-white);
   border-radius: var(--desktop-borderRadius);
   padding: var(--desktop-padding);
@@ -76,6 +127,9 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+
+  height: 100px;
+  width: 40px;
 }
 
 .counter span {
@@ -164,6 +218,74 @@ export default {
   font-size: 16px;
 }
 
+.content-edit {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: calc(0.6 * var(--desktop-margin));
+}
+
+.mention {
+  color: var(--primary-blue);
+  font-weight: bold;
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--desktop-margin);
+}
+
+button[name="delete"] {
+  color: var(--primary-red);
+}
+
+button[name="update"] {
+  background: var(--primary-blue);
+  color: var(--neutral-white);
+
+  border: 0px;
+  border-radius: var(--desktop-borderRadius);
+  padding: calc(0.6 * var(--desktop-padding));
+
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button:disabled:hover {
+  filter: none;
+}
+
+textarea {
+  width: 100%;
+  border-radius: var(--desktop-borderRadius);
+  padding: 10px;
+  resize: none;
+
+  outline: none;
+  border: 1px solid rgba(var(--rgb-blue), 0.5);
+}
+
+textarea:focus {
+  outline: none;
+  border: 1px solid var(--primary-blue);
+}
+
+.tag {
+  background: var(--primary-blue);
+  color: var(--neutral-white);
+
+  padding: 2px 4px;
+  font-size: 0.8em;
+  font-weight: bold;
+  border-radius: 2px;
+}
+
 @media (max-width: 375px) {
   .card {
     grid-template-areas:
@@ -176,7 +298,7 @@ export default {
     padding: var(--mobile-padding);
   }
 
- .title {
+  .title {
     grid-area: 1 / 1 / 1 / 3;
   }
 
@@ -188,6 +310,8 @@ export default {
     grid-area: 3 / 1 / 3 / 2;
 
     flex-direction: row;
+
+    height: 40px;
     width: 100px;
   }
 

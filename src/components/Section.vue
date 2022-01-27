@@ -1,11 +1,23 @@
 <template>
   <div class="cards">
     <template v-for="comment in comments" :key="comment.id">
-      <Comment :comment="comment" />
+      <Comment
+        :comment="comment"
+        :isOwner="comment.user.username === currentUser.username"
+        @update="updateComment"
+        @delete="deleteComment"
+        @change-score="changeScore"
+      />
       <template v-for="reply in comment.replies" :key="reply.id">
         <div class="reply">
           <div class="vertical-line"></div>
-          <Comment :comment="reply" />
+          <Comment
+            :comment="reply"
+            :isOwner="reply.user.username === currentUser.username"
+            @update="updateComment"
+            @delete="deleteComment"
+            @change-score="changeScore"
+          />
         </div>
       </template>
     </template>
@@ -95,6 +107,36 @@ export default {
       ],
     };
   },
+  methods: {
+    findCommentById(id) {
+      const find = (array = [], id) => {
+        for (const item of array) {
+          const result = item.id === id ? item : find(item.replies, id);
+          if (result) return result;
+        }
+      };
+
+      return find(this.comments, id);
+    },
+
+    updateComment(e) {
+      const { id, comment } = e;
+      const commentToUpdate = this.findCommentById(id);
+      commentToUpdate.content = comment;
+    },
+
+    deleteComment(e) {
+      // const { id } = e;
+      // const commentToDelete = this.findCommentById(id);
+      console.log("delete", e);
+    },
+
+    changeScore(e) {
+      const { id, newScore } = e;
+      const commentToUpdate = this.findCommentById(id);
+      commentToUpdate.score = newScore;
+    },
+  },
 };
 </script>
 
@@ -106,27 +148,28 @@ export default {
 
   width: var(--desktop-maxWidth);
 }
-.reply{
+
+.reply {
   display: flex;
-  margin-left: 55px;
+  width: calc(100% - 30px);
 }
 
-.vertical-line{
+.vertical-line {
   border-left: 4px solid var(--neutral-lightGray);
 }
 
 @media (max-width: 375px) {
   .cards {
     width: inherit;
+    /* align-items: center; */
   }
 
-  .reply{
+  .reply {
     margin-left: 15px;
   }
 
-  .vertical-line{
+  .vertical-line {
     border-left: 2px solid var(--neutral-lightGray);
-
   }
 }
 </style>
