@@ -1,69 +1,109 @@
 <template>
-  <div class="card">
-    <div class="counter">
-      <button @click="changeScore(1)">
-        <img src="@/assets/icons/icon-plus.svg" />
-      </button>
-      <span>{{ comment.score }}</span>
-      <button @click="changeScore(-1)">
-        <img src="@/assets/icons/icon-minus.svg" />
-      </button>
-    </div>
-    <div class="title">
-      <div class="title-content">
-        <img class="avatar" :src="getImage(comment.user.image.png)" />
-        <div class="username">{{ comment.user.username }}</div>
-        <div v-if="isOwner" class="tag">you</div>
-        <div class="date">{{ comment.createdAt }}</div>
-      </div>
-    </div>
-    <div class="content">
-      <div v-if="isEdit" class="content-edit">
-        <textarea rows="4" v-model="newComment" />
-        <button name="update" @click="update">Update</button>
-      </div>
-      <div v-else>
-        <span class="mention">{{
-          comment.replyingTo ? `@${comment.replyingTo}` : ""
-        }}</span>
-        {{ comment.content }}
-      </div>
-    </div>
-    <div class="action">
-      <div v-if="isOwner" class="action-buttons">
-        <button name="delete" @click="handleDelete" :disabled="isEdit">
-          <img src="@/assets/icons/icon-delete.svg" />
-          <span>Delete</span>
+  <div class="container">
+    <div class="card">
+      <div class="counter">
+        <button @click="changeScore(1)">
+          <img src="@/assets/icons/icon-plus.svg" />
         </button>
-        <button name="edit" @click="edit" :disabled="isEdit">
-          <img src="@/assets/icons/icon-edit.svg" />
-          <span>Edit</span>
+        <span>{{ comment.score }}</span>
+        <button @click="changeScore(-1)">
+          <img src="@/assets/icons/icon-minus.svg" />
         </button>
       </div>
-      <button v-else>
-        <img src="@/assets/icons/icon-reply.svg" />
-        <span>Reply</span>
-      </button>
+      <div class="title">
+        <div class="title-content">
+          <img class="avatar" :src="getImage(comment.user.image.png)" />
+          <div class="username">{{ comment.user.username }}</div>
+          <div v-if="isOwner" class="tag">you</div>
+          <div class="date">{{ getDate(comment.createdAt) }}</div>
+        </div>
+      </div>
+      <div class="content">
+        <div v-if="isEdit" class="content-edit">
+          <textarea rows="4" v-model="newComment" />
+          <button name="update" @click="handleUpdate">Update</button>
+        </div>
+        <div v-else>
+          <span class="mention">{{
+            comment.replyingTo ? `@${comment.replyingTo}` : ""
+          }}</span>
+          {{ comment.content }}
+        </div>
+      </div>
+      <div class="action">
+        <div v-if="isOwner" class="action-buttons">
+          <button name="delete" @click="handleDelete" :disabled="isEdit">
+            <img src="@/assets/icons/icon-delete.svg" />
+            <span>Delete</span>
+          </button>
+          <button name="edit" @click="edit" :disabled="isEdit">
+            <img src="@/assets/icons/icon-edit.svg" />
+            <span>Edit</span>
+          </button>
+        </div>
+        <button v-else @click="handleReply">
+          <img src="@/assets/icons/icon-reply.svg" />
+          <span>Reply</span>
+        </button>
+      </div>
     </div>
+    <template v-for="reply in comment.replies" :key="reply.id">
+      <div class="reply">
+        <div class="vertical-line"></div>
+        <Comment
+          :comment="reply"
+          :isOwner="reply.user.username === currentUser.username"
+          :currentUser="currentUser"
+          @update="handleUpdate"
+          @delete="handleDelete"
+          @change-score="changeScore"
+          @reply="handleNewComment"
+        />
+      </div>
+    </template>
+    <InputComment
+      v-if="showInput"
+      :currentUser="currentUser"
+      :isReply="true"
+      :replyToId="comment.id"
+      @send="handleNewComment"
+    />
   </div>
 </template>
 
 <script>
+import InputComment from "./InputComment.vue";
+import moment from "moment";
+
 export default {
   name: "Comment",
   props: {
     comment: Object,
     isOwner: Boolean,
+    currentUser: Object,
+  },
+  setup() {
+    // const updateComment = function(){};
+    // return {updateComment}
+  },
+  components: {
+    InputComment,
   },
   data() {
     return {
       isEdit: false,
       newComment: undefined,
+      showInput: false,
     };
   },
   methods: {
     getImage(imgUrl) {
       return require("../assets/avatars" + imgUrl);
+    },
+    getDate(date) {
+      const pastDate = moment(date);
+      const duration = moment.duration(pastDate.diff(moment()));
+      return duration.humanize(true);
     },
     edit() {
       this.isEdit = true;
@@ -71,7 +111,8 @@ export default {
         (this.comment.replyingTo ? `@${this.comment.replyingTo} ` : "") +
         this.comment.content;
     },
-    update() {
+
+    handleUpdate() {
       this.$emit("update", {
         id: this.comment.id,
         comment: this.newComment,
@@ -84,17 +125,41 @@ export default {
         id: this.comment.id,
       });
     },
-    changeScore(value) {
+    changeScore(e) {
       this.$emit("change-score", {
-        id: this.comment.id,
-        newScore: this.comment.score + value,
+        id: e.id ? e.id : this.comment.id,
+        newScore: e.id ? e.newScore : this.comment.score + e,
       });
+    },
+    handleReply() {
+      this.showInput = true;
+    },
+    handleNewComment(e) {
+      this.$emit("reply", {
+        replyToId: e.comment ? e.replyToId : e.replyToId,
+        reply: {
+          id: Date.now(),
+          content: e.comment ? e.comment : e.reply.content,
+          createdAt: new Date(),
+          score: 0,
+          replyingTo: this.comment.user.username,
+          user: this.currentUser,
+        },
+      });
+
+      this.showInput = false;
     },
   },
 };
 </script>
 
 <style scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .card {
   display: grid;
   grid-gap: var(--desktop-margin);
@@ -168,6 +233,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 15px;
+  width: max-content;
 }
 
 .avatar {
@@ -286,6 +352,17 @@ textarea:focus {
   border-radius: 2px;
 }
 
+.reply {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.vertical-line {
+  border-left: 4px solid var(--neutral-lightGray);
+  margin: 0 25px;
+}
+
 @media (max-width: 375px) {
   .card {
     grid-template-areas:
@@ -317,6 +394,14 @@ textarea:focus {
 
   .action {
     grid-area: 3 / 2 / 4 / 3;
+  }
+
+  .reply {
+    margin-left: 15px;
+  }
+
+  .vertical-line {
+    border-left: 2px solid var(--neutral-lightGray);
   }
 }
 </style>

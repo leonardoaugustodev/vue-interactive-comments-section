@@ -4,22 +4,26 @@
       <Comment
         :comment="comment"
         :isOwner="comment.user.username === currentUser.username"
+        :currentUser="currentUser"
         @update="updateComment"
         @delete="deleteComment"
         @change-score="changeScore"
+        @reply="handleReply"
       />
-      <template v-for="reply in comment.replies" :key="reply.id">
+      <!-- <template v-for="reply in comment.replies" :key="reply.id">
         <div class="reply">
           <div class="vertical-line"></div>
           <Comment
             :comment="reply"
             :isOwner="reply.user.username === currentUser.username"
+            :currentUser="currentUser"
             @update="updateComment"
             @delete="deleteComment"
             @change-score="changeScore"
+            @reply="handleReply"
           />
         </div>
-      </template>
+      </template> -->
     </template>
   </div>
 </template>
@@ -37,8 +41,8 @@ export default {
     return {
       currentUser: {
         image: {
-          png: "image-juliusomo.png",
-          webp: "image-juliusomo.webp",
+          png: "/image-juliusomo.png",
+          webp: "/image-juliusomo.webp",
         },
         username: "juliusomo",
       },
@@ -47,7 +51,7 @@ export default {
           id: 1,
           content:
             "Impressive! Though it seems the drag feature could be improved. But overall it looks incredible. You've nailed the design and the responsiveness at various breakpoints works really well.",
-          createdAt: "1 month ago",
+          createdAt: "2021-12-27T15:54:56Z",
           score: 12,
           user: {
             image: {
@@ -62,7 +66,7 @@ export default {
           id: 2,
           content:
             "Woah, your project looks awesome! How long have you been coding for? I'm still new, but think I want to dive into React as well soon. Perhaps you can give me an insight on where I can learn React? Thanks!",
-          createdAt: "2 weeks ago",
+          createdAt: "2022-01-20T15:54:56Z",
           score: 5,
           user: {
             image: {
@@ -76,7 +80,7 @@ export default {
               id: 3,
               content:
                 "If you're still new, I'd recommend focusing on the fundamentals of HTML, CSS, and JS before considering React. It's very tempting to jump ahead but lay a solid foundation first.",
-              createdAt: "1 week ago",
+              createdAt: "2022-01-20T15:54:56Z",
               score: 4,
               replyingTo: "maxblagun",
               user: {
@@ -91,7 +95,7 @@ export default {
               id: 4,
               content:
                 "I couldn't agree more with this. Everything moves so fast and it always seems like everyone knows the newest library/framework. But the fundamentals are what stay constant.",
-              createdAt: "2 days ago",
+              createdAt: "2022-01-25T15:54:56Z",
               score: 2,
               replyingTo: "ramsesmiron",
               user: {
@@ -136,6 +140,20 @@ export default {
       const commentToUpdate = this.findCommentById(id);
       commentToUpdate.score = newScore;
     },
+
+    handleReply(e) {
+      const { replyToId, reply } = e;
+
+      const commentToUpdate = this.findCommentById(replyToId);
+
+      const replies = commentToUpdate.replies || [];
+      console.log(replies);
+      
+      replies.push(reply);
+
+      commentToUpdate.replies = Object.assign([], replies);
+      console.log(commentToUpdate.replies);
+    },
   },
 };
 </script>
@@ -149,27 +167,11 @@ export default {
   width: var(--desktop-maxWidth);
 }
 
-.reply {
-  display: flex;
-  width: calc(100% - 30px);
-}
-
-.vertical-line {
-  border-left: 4px solid var(--neutral-lightGray);
-}
 
 @media (max-width: 375px) {
   .cards {
     width: inherit;
     /* align-items: center; */
-  }
-
-  .reply {
-    margin-left: 15px;
-  }
-
-  .vertical-line {
-    border-left: 2px solid var(--neutral-lightGray);
   }
 }
 </style>
