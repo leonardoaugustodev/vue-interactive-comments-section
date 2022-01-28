@@ -107,22 +107,20 @@ export default {
     },
     edit() {
       this.isEdit = true;
-      this.newComment =
-        (this.comment.replyingTo ? `@${this.comment.replyingTo} ` : "") +
-        this.comment.content;
+      this.newComment = this.comment.content;
     },
 
-    handleUpdate() {
+    handleUpdate(e) {
       this.$emit("update", {
-        id: this.comment.id,
-        comment: this.newComment,
+        id: e.id || this.comment.id,
+        comment: e.comment || this.newComment,
       });
 
       this.isEdit = false;
     },
-    handleDelete() {
+    handleDelete(e) {
       this.$emit("delete", {
-        id: this.comment.id,
+        id: e.id || this.comment.id,
       });
     },
     changeScore(e) {
@@ -153,11 +151,11 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .container {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  width: 100%;
 }
 
 .card {
@@ -183,7 +181,6 @@ export default {
   background: var(--neutral-veryLightGray);
   border-radius: var(--desktop-borderRadius);
   padding: 10px;
-  /* margin: 0 10px 0 0; */
 
   font-weight: bold;
   font-size: var(--desktop-fontSize);
@@ -247,6 +244,7 @@ export default {
 .date {
   color: var(--neutral-grayBlue);
   font-weight: 500;
+  font-size: 0.8em;
 }
 
 .action {
@@ -354,7 +352,6 @@ textarea:focus {
 
 .reply {
   display: flex;
-  width: 100%;
   justify-content: space-between;
 }
 
@@ -370,9 +367,13 @@ textarea:focus {
       "content content"
       "counter action";
 
+    grid-template-columns: min-content 1fr;
+
     flex-direction: column-reverse;
 
     padding: var(--mobile-padding);
+    margin: var(--mobile-margin);
+    width: auto;
   }
 
   .title {
@@ -396,12 +397,10 @@ textarea:focus {
     grid-area: 3 / 2 / 4 / 3;
   }
 
-  .reply {
-    margin-left: 15px;
-  }
 
   .vertical-line {
     border-left: 2px solid var(--neutral-lightGray);
+    margin: 0 var(--mobile-margin);
   }
 }
 </style>

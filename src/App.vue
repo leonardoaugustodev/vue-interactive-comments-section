@@ -16,8 +16,7 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap');
 
 <style>
-:root{
-
+:root {
   --rgb-blue: 84, 87, 182;
 
   --primary-blue: rgb(var(--rgb-blue));
@@ -36,9 +35,9 @@ export default {
   --desktop-padding: 20px;
   --desktop-borderRadius: 6px;
   --desktop-fontSize: 16px;
-  
+
   --mobile-margin: 10px;
-  --mobile-padding: 15px;
+  --mobile-padding: 10px;
   --mobile-borderRadius: 4px;
   --mobile-fontSize: 14px;
 }
@@ -49,28 +48,38 @@ export default {
   box-sizing: border-box;
 }
 
-button { 
+button {
   cursor: pointer;
 }
 
-button:hover{
+button:hover {
   filter: opacity(0.7);
-  transition: all 0.3s ;
+  transition: all 0.3s;
 }
 
-body{
+body {
   background: var(--neutral-veryLightGray);
+  display: flex;
+  justify-content: center;
 }
 
 #app {
-  font-family: 'Rubik', sans-serif;
+  font-family: "Rubik", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   height: 100vh;
   width: 100vw;
 
+  max-width: var(--desktop-maxWidth);
+
   display: flex;
   justify-content: center;
+}
+
+@media (max-width: 375px) {
+  #app {
+    max-width: var(--mobile-maxWidth);
+  }
 }
 </style>

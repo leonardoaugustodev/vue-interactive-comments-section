@@ -1,44 +1,54 @@
 <template>
-  <div class="cards">
-    <template v-for="comment in comments" :key="comment.id">
-      <Comment
-        :comment="comment"
-        :isOwner="comment.user.username === currentUser.username"
-        :currentUser="currentUser"
-        @update="updateComment"
-        @delete="deleteComment"
-        @change-score="changeScore"
-        @reply="handleReply"
-      />
-      <!-- <template v-for="reply in comment.replies" :key="reply.id">
-        <div class="reply">
-          <div class="vertical-line"></div>
-          <Comment
-            :comment="reply"
-            :isOwner="reply.user.username === currentUser.username"
-            :currentUser="currentUser"
-            @update="updateComment"
-            @delete="deleteComment"
-            @change-score="changeScore"
-            @reply="handleReply"
-          />
-        </div>
-      </template> -->
-    </template>
+  <div class="section-container">
+    <div class="cards">
+      <template v-for="comment in comments" :key="comment.id">
+        <Comment
+          :comment="comment"
+          :isOwner="comment.user.username === currentUser.username"
+          :currentUser="currentUser"
+          @update="updateComment"
+          @delete="openModal"
+          @change-score="changeScore"
+          @reply="handleReply"
+        />
+      </template>
+    </div>
+    <InputComment
+      class="input-comment"
+      :currentUser="currentUser"
+      :isReply="false"
+      @send="handleReply"
+    />
   </div>
+  <Modal
+    class="modal"
+    v-if="showDeleteModal"
+    :title="'Delete comment'"
+    :message="'Are you sure you want to delete this comment? This will remove the comment and can\'t be undone.'"
+    :cancelButtonTitle="'No, Cancel'"
+    :confirmButtonTitle="'Yes, Delete'"
+    @cancel="handleModalCancel"
+    @confirm="handleModalConfirm"
+  />
 </template>
 
 <script>
 import Comment from "./Comment.vue";
+import Modal from "./Modal.vue";
+import InputComment from "./InputComment.vue";
 
 export default {
   name: "Section",
   props: {},
   components: {
     Comment,
+    Modal,
+    InputComment,
   },
   data() {
     return {
+      showDeleteModal: false,
+      commentToDelete: {},
       currentUser: {
         image: {
           png: "/image-juliusomo.png",
@@ -129,10 +139,10 @@ export default {
       commentToUpdate.content = comment;
     },
 
-    deleteComment(e) {
-      // const { id } = e;
-      // const commentToDelete = this.findCommentById(id);
-      console.log("delete", e);
+    openModal(e) {
+      const { id } = e;
+      this.commentToDelete = this.findCommentById(id);
+      this.showDeleteModal = true;
     },
 
     changeScore(e) {
@@ -144,34 +154,81 @@ export default {
     handleReply(e) {
       const { replyToId, reply } = e;
 
+      const isNewComment = !reply;
+
+      if (isNewComment) {
+        this.comments.push({
+          id: Date.now(),
+          content: e.comment,
+          createdAt: new Date(),
+          score: 0,
+          user: this.currentUser,
+        });
+      }
+
       const commentToUpdate = this.findCommentById(replyToId);
 
       const replies = commentToUpdate.replies || [];
       console.log(replies);
-      
+
       replies.push(reply);
 
       commentToUpdate.replies = Object.assign([], replies);
       console.log(commentToUpdate.replies);
+    },
+
+    handleModalCancel() {
+      this.commentToDelete = {};
+      this.showDeleteModal = false;
+    },
+
+    handleModalConfirm() {
+      this.deleteComment(this.commentToDelete.id);
+      this.handleModalCancel();
+    },
+
+    deleteComment(id) {
+      const deleteItem = (array = [], id) => {
+        let index = array.findIndex((item) => item.id === id);
+        console.log(id, index);
+
+        if (index >= 0) {
+          index = array.splice(index, 1);
+          return;
+        }
+
+        for (const item of array) {
+          deleteItem(item.replies, id);
+        }
+
+        return;
+      };
+
+      deleteItem(this.comments, id);
     },
   },
 };
 </script>
 
 <style scoped>
+.section-container{
+  display: flex;
+  flex-direction: column;
+  width: var(--desktop-maxWidth);
+}
+
 .cards {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-
-  width: var(--desktop-maxWidth);
+ 
 }
 
-
 @media (max-width: 375px) {
-  .cards {
-    width: inherit;
-    /* align-items: center; */
+
+  .section-container{
+    width: var(--mobile-maxWidth);
+    max-width: 375px;
   }
 }
 </style>
